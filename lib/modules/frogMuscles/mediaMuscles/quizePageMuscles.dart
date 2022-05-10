@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:graduationproj1/data/questions_list.dart';
-import 'package:graduationproj1/score/result_screen.dart';
+// import 'package:graduationproj1/score/result_screen.dart';
 import 'package:hexcolor/hexcolor.dart';
+
+import '../../score/result_screen.dart';
 
 class QuizePage extends StatefulWidget {
   @override
@@ -59,7 +61,7 @@ class _AudioPageState extends State<QuizePage> {
                       ),
                     ),
                   ),
-                 Divider(),
+                  Divider(),
                   SizedBox(
                     height: 10.0,
                   ),

@@ -14,6 +14,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
+
 import 'home_page.dart';
 
 class Registration extends StatefulWidget {
@@ -27,7 +28,7 @@ class _RegistrationState extends State<Registration> {
   PickedFile pickedFile;
   bool isLoading = false;
 //image picker
-
+ // final _auth = FirebaseAuth.instance;
   //for validation
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
@@ -383,12 +384,14 @@ class _RegistrationState extends State<Registration> {
     final user = ParseUser.createUser(username, password, email);
     // user.set('job', jobController.text);
     // await user.save();
-
+    //await AuthServices().signUp(nameController.text, emailController.text, passwordController.text);
 
     var response = await user.signUp();
 
     if (response.success) {
-      showSuccess();}
+      showSuccess();
+      navigateTo(context, HomePage());
+    }
     //  else if(response.error != null) {
     //   showError(response.error.message);
     // }

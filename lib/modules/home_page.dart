@@ -16,6 +16,21 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../main.dart';
+import 'package:graduationproj1/modules/settings.dart';
+import '../../layout/quizLayout.dart';
+import '../../layout/frogVideoLayout.dart';
+import '../../layout/frogSkinLayout.dart';
+import '../layout/quizLayout.dart';
+import '../layout/frogSkinLayout.dart';
+import 'package:graduationproj1/shared/components/components.dart';
+import 'package:graduationproj1/shared/cubit/cubit.dart';
+import 'package:graduationproj1/shared/cubit/langcubit.dart';
+import 'package:hexcolor/hexcolor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../main.dart';
+import 'chat.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -32,9 +47,9 @@ class _HomePageState extends State<HomePage> {
 
   bool isHovering = false;
   String email;
-
+  // String nameuser;
   //this should come from database
-  final name = 'Sarah Abs';
+  // final name = 'Sarah Abs';
 
   //this should come from database
   final urlImage =
@@ -50,8 +65,11 @@ class _HomePageState extends State<HomePage> {
 
   void initial() async {
     loginData = await SharedPreferences.getInstance();
+
     setState(() {
       email = loginData.getString('email');
+      // nameuser = registerData.getString('name');
+
     });
   }
 
@@ -60,6 +78,46 @@ class _HomePageState extends State<HomePage> {
     // TODO: implement dispose
     controller.dispose();
     super.dispose();
+  }
+  Future<bool> hasUserLogged() async {
+    ParseUser currentUser = await ParseUser.currentUser() as ParseUser;
+    if (currentUser == null) {
+      return false;
+    }
+    //Checks whether the user's session token is valid
+    final ParseResponse parseResponse =
+    await ParseUser.getCurrentUserFromServer(currentUser.sessionToken);
+
+    if (parseResponse?.success == null || !parseResponse.success) {
+      //Invalid session. Logout
+      await currentUser.logout();
+      return false;
+    } else {
+      return true;
+    }
+  }
+  Widget imageProfile() {
+
+    return Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+        Align(
+        alignment: Alignment.center,
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: HexColor("#e8885b"),
+            child: ClipOval(
+              child: new SizedBox(
+                  width: 190.0,
+                  height: 190.0,
+                  child:
+                 uploadPic(context),
+
+              ),
+            ),
+          ),
+        )]));
   }
 
   void _changeLanguage(Language lang) {
@@ -81,6 +139,8 @@ class _HomePageState extends State<HomePage> {
     // MyApp.setLocale(context,_temp);
   }
   Future<ParseUser> getUser() async {
+    currentUser = await ParseUser.currentUser() as ParseUser;
+    return currentUser;
   }
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -92,80 +152,104 @@ class _HomePageState extends State<HomePage> {
 
 
 
-        endDrawer: Drawer(
-          child: Material(
-            borderOnForeground: true,
-            child: Container(
-              decoration:
-                  BoxDecoration(color: Theme.of(context).backgroundColor),
-              child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Stack(
-                    children: [
-                      ListView(
-                        children: [
-                          buildHeader(
-                            urlImage: urlImage,
-                            name: name,
-                            email: email,
+        endDrawer: FutureBuilder<ParseUser>(
+            future: getUser(),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return Center(
+                    child: Container(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator()),
+                  );
+                default:
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Image.asset(
+                        "assets/Frogmuscles.png",
+                        fit: BoxFit.fill,
+                    ));
+                  } else {
+                    return Drawer(
+                        child: Material(
+                          borderOnForeground: true,
+                          child: Container(
+                            decoration:
+                            BoxDecoration(color: Theme
+                                .of(context)
+                                .backgroundColor),
+                            child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Stack(
+                                  children: [
+                                    ListView(
+                                      children: [
+                                        buildHeader(
+                                          // urlImage:  ,
+                                          name: snapshot.data.username,
+                                          email: snapshot.data.emailAddress,
+                                        ),
+                                        myDivider(),
+                                        buildMenuItem(
+                                          text: DemoLocalization.of(context)
+                                              .translate('appmode'),
+                                          icon: Icons.lightbulb,
+                                          onClicked: () =>
+                                              selectedItem(context, 0),
+                                        ),
+                                        buildMenuItem(
+                                          text:
+                                          DemoLocalization.of(context)
+                                              .translate('chat'),
+                                          icon: Icons.chat,
+                                          onClicked: () =>
+                                              selectedItem(context, 1),
+                                        ),
+                                        buildMenuItem(text: "Settings",
+                                            icon: Icons.settings,
+                                            onClicked: () =>
+                                                selectedItem(context, 2)),
+                                      ],
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      left: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: HexColor("#e8885b"),
+                                            borderRadius:
+                                            BorderRadius.all(
+                                                Radius.circular(5.0))),
+                                        child: TextButton(
+                                          child: Text(
+                                            DemoLocalization.of(context)
+                                                .translate('logout'),
+                                            style: Theme
+                                                .of(context)
+                                                .textTheme
+                                                .subtitle1,
+                                          ),
+                                          onPressed: () {
+                                            doUserLogout();
+                                            // navigateTo(context, FingerprintPage());
+                                            loginData.clear();
+                                          },
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )),
                           ),
-                          myDivider(),
-                          buildMenuItem(
-                            text: DemoLocalization.of(context)
-                                .translate('appmode'),
-                            icon: Icons.lightbulb,
-                            onClicked: () => selectedItem(context, 0),
-                          ),
-                          buildMenuItem(
-                            text:
-                                DemoLocalization.of(context).translate('chat'),
-                            icon: Icons.chat,
-                            onClicked: () => selectedItem(context, 1),
-                          ),
-                          buildMenuItem(text: "Settings", icon: Icons.settings,onClicked: ()=>selectedItem(context, 2)),
-                        ],
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        left: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: HexColor("#e8885b"),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0))),
-                          child: TextButton(
-                            child: Text(
-                              DemoLocalization.of(context).translate('logout'), 
-                              style: Theme.of(context).textTheme.subtitle1,
-                            ),
-                            onPressed: () {
-                              navigateTo(context, FingerprintPage());
-                              loginData.clear();
-                            },
-                          ),
-                        ),
-                      )
-                    ],
-                  )),
-            ),
-          ),
-        ),
+                        ));
+                  }
+              }
+            }),
 
-        body: FutureBuilder<ParseUser>(
-          future: getUser(),
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-              case ConnectionState.waiting:
-                return Center(
-                  child: Container(
-                      width: 100,
-                      height: 100,
-                      child: CircularProgressIndicator()),
-                );
-              default:
-                return Padding(
+        body:
+                Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: InkWell(
                     onHover: (val) {
@@ -180,10 +264,13 @@ class _HomePageState extends State<HomePage> {
                       }
                       switch (vIndiceWheel) {
                         case 1:
-                          navigateTo(context, FrogSkinLayout());
+                          navigateTo(context, Chat());
                           break;
                         case 2:
-                          navigateTo(context, FrogMusclesLayout());
+                          navigateTo(context, QuizLayout());
+                          break;
+                        case 3:
+                          navigateTo(context, FrogVideoLayout());
                       }
                     },
                     child: Padding(
@@ -267,11 +354,10 @@ class _HomePageState extends State<HomePage> {
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: AssetImage("assets/Frogmuscles.png"),
+                                    image: AssetImage("assets/quiz.png"),
                                   ),
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(20)),
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
                                 ),
                               ),
                               Positioned(
@@ -294,22 +380,107 @@ class _HomePageState extends State<HomePage> {
                                                   color: HexColor(
                                                       "#e8885b")))))),
                             ],
+                          ),
+                          Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: AssetImage("assets/video.jpg"),
+                                  ),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                                ),
+                              ),
+                              Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  left: 0,
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.white70,
+                                          borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(20),
+                                              bottomRight: Radius.circular(20))),
+                                      child: Center(
+                                          child: Text(
+                                              DemoLocalization.of(context)
+                                                  .translate('frogvideos'),
+                                              style: TextStyle(
+                                                  fontSize: 30,
+                                                  color: HexColor("#e8885b")))))),
+                            ],
                           )
                         ],
                       ),
                     ),
                   ),
-                );
-          }
-          }));
+                ));
 
 
+  Widget uploadPic(BuildContext context) {
+    return FutureBuilder<ParseObject>(
+      future: getGalleryItem(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+            return Center(
+              child: Container(
+                  width: 100,
+                  height: 100,
+                  child: CircularProgressIndicator()),
+            );
+          default:
+            if (snapshot.hasError) {
+              return Image.asset(
+                "assets/Frogmuscles.png",
+                fit: BoxFit.fill,
+              );
+              // if (!snapshot.hasData){
+              //  return Image.asset(
+              //     "assets/Frogmuscles.png",
+              //     fit: BoxFit.fill,
+              //   );
+              // }
+            }
+            else {
+
+              //Web/Mobile/Desktop
+              ParseFile varFile =
+              snapshot.data.get<ParseFile>('file');
+              return Image.network(
+                varFile.url,
+                width: 200,
+                height: 200,
+                fit: BoxFit.fitHeight,
+              );
+
+            }
+
+        }},
+    );
+
+  }
+
+  Future<ParseObject> getGalleryItem() async {
+    ParseUser currentUser = await ParseUser.currentUser() as ParseUser;
+    QueryBuilder<ParseObject> queryPublisher =
+    QueryBuilder<ParseObject>(ParseObject('Gallery'))
+      ..whereEqualTo('myuser', currentUser.username )
+      ..orderByDescending('updatedAt');
+    final ParseResponse apiResponse = await queryPublisher.query();
+
+    return apiResponse.results.first as ParseObject;
+  }
 
   Widget buildAppBar(BuildContext context) {
     return AppBar(
       iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       title: Text(
-        DemoLocalization.of(context).translate('app_bar_title') + ' ${email}!',
+        DemoLocalization.of(context).translate('app_bar_title') ,
         style: Theme.of(context).textTheme.headline5,
       ),
       actions: [
@@ -404,10 +575,11 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(30.0),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 30.0,
-                  backgroundImage: NetworkImage(urlImage),
-                ),
+                // CircleAvatar(
+                //   radius: 30.0,
+                //   backgroundImage: () => uploadPic(context),
+                // ),
+                imageProfile(),
                 SizedBox(
                   width: 20.0,
                 ),
@@ -430,4 +602,21 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       );
+  void doUserLogout() async {
+    var response = await currentUser.logout();
+    if (response.success) {
+      Message.showSuccess(
+          context: context,
+          message: 'User was successfully logout!',
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => FingerprintPage()),
+                  (Route<dynamic> route) => false,
+            );
+          });
+    } else {
+      Message.showError(context: context, message: response.error.message);
+    }
+  }
 }

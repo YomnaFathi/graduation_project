@@ -1,3 +1,4 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class FingerprintPage extends StatefulWidget {
   @override
   State<FingerprintPage> createState() => _FingerprintPageState();
@@ -27,7 +29,7 @@ class _FingerprintPageState extends State<FingerprintPage> {
   SharedPreferences logindata;
   bool NewUser;
   String email;
-
+  //final _auth = FirebaseAuth.instance;
   //for the invisible and visible
   bool isPassword = true;
 
@@ -342,7 +344,8 @@ class _FingerprintPageState extends State<FingerprintPage> {
     final password = passwordController.text.trim();
 
     final user = ParseUser(email, password, null);
-
+    //AuthServices().signIn(emailController.text, passwordController.text
+    //);
     var response = await user.login();
 
     if (response.success) {
@@ -359,7 +362,7 @@ class _FingerprintPageState extends State<FingerprintPage> {
   void navigateToUser() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => UserPage()),
+      MaterialPageRoute(builder: (context) => HomePage()),
           (Route<dynamic> route) => false,
     );
   }
@@ -369,6 +372,8 @@ class UserPage extends StatelessWidget {
   ParseUser currentUser;
 
   Future<ParseUser> getUser() async {
+    currentUser = await ParseUser.currentUser() as ParseUser;
+    return currentUser;
   }
 
   @override
