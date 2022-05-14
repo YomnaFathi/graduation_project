@@ -583,20 +583,26 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(
                   width: 20.0,
                 ),
-                Column(
+            Flexible(
+              child:Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: Theme.of(context).textTheme.headline6,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       email,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: Theme.of(context).textTheme.subtitle2,
                     ),
                   ],
                 ),
+            )
               ],
             ),
           ),

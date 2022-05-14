@@ -56,7 +56,7 @@ dependencies:
   flutter_form_builder: ^7.1.0
   arcore_flutter_plugin: ^0.1.0-null-safety.3
   flutter_cube: ^0.1.1
-
+  flutter_beep: ^1.0.0
 
 
   # download PDF

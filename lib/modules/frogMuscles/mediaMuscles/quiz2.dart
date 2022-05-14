@@ -1,7 +1,7 @@
 // import 'package:audio_manager/audio_manager.dart';
 
 import 'dart:io';
-
+import 'package:flutter_beep/flutter_beep.dart';
 import 'package:graduationproj1/main.dart';
 import 'package:flutter/material.dart';
 // import 'package:graduationproj1/data/quiz2_list.dart';
@@ -89,7 +89,8 @@ class _AudioPageState extends State<Quize2Page> {
               final varTitle = varQues.get<String>('Question');
               final varAnswer =  varQues.get('answers');
               final varImage =  varQues.get<ParseFileBase>('QuesImage');
-              return Column(
+              return SingleChildScrollView( //bottom overflowed of rotation
+                  child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -155,8 +156,10 @@ class _AudioPageState extends State<Quize2Page> {
                               .toList()[i]) {
                             score++;
                             print("yes");
+                            FlutterBeep.beep();
                           } else {
                             print("no");
+                            FlutterBeep.beep(false);
                           }
                           setState(() {
                             btnPressed = true;
@@ -205,7 +208,7 @@ class _AudioPageState extends State<Quize2Page> {
                     ),
                   )
                 ],
-              );
+              ));
             },
             itemCount: snapshot.data.length,
           )),
